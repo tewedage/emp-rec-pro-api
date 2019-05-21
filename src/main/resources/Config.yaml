@@ -1,9 +1,10 @@
 http:
-  Host: "localhost"
   Port: "8081"
-DataBase:
   Host: "localhost"
-  Port: "3306"
-  User: "root"
-  Password: "34fekadesabu"
-  Database: "MS3Employee"
+  
+systemapi:
+  retrieve_url: "http://ms3empcontactapi.us-e2.cloudhub.io/EmployeeRecord"
+  delete_url: "",
+  insert_url: "",
+  update_url: ""
+  

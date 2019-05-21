@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="b240a835-ce40-43fb-a11c-0fe64113e6c5" />
+	<flow name="ProcessApi" doc:id="f306c00a-1c8e-4111-bda3-9fc22ccdc1f0" >
+		<http:listener doc:name="Listener" doc:id="2849785d-5123-457b-81f5-5591ecbce602" config-ref="HTTP_Listener_config" path="/ProcessApi"/>
+		<logger level="INFO" doc:name="Logger" doc:id="585fb5f9-f7db-4e45-9527-da695890e0e7" message="Calling process API with request == #[payload]"/>
+		<choice doc:name="Choice" doc:id="c1ff1326-d816-478f-8b0b-372c83edb10d" >
+			<when expression="#[payload.op=='READ']">
+				<http:request method="GET" doc:name="SystemApi" doc:id="36459812-9a81-4816-9ca7-72605551a6fb" config-ref="HTTP_Request_configuration" url="${systemapi.retrieve_url}">
+			<http:body ><![CDATA[#[payload.request]]]></http:body>
+					<http:query-params><![CDATA[#[output application/java
+---
+{
+	"EmpID" : payload.EmpID
+}]]]></http:query-params>
+		</http:request>
+				<ee:transform doc:name="businessLogic" doc:id="619b4949-2492-42d7-9959-1a4bf3cbf277">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+	FullName:payload.Identification.FirstName ++ payload.Identification.LastName,
+	HomeAddress:payload.Address.City,
+	ContactEmail:payload.Communication.value
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<when expression="#[payload.op=='CREATE']">
+				<http:request method="GET" doc:name="SystemApi" doc:id="c13d7127-2a85-4c94-821c-879573177529" config-ref="HTTP_Request_configuration" url="${systemapi.create_url}">
+			<http:body ><![CDATA[#[payload.request]]]></http:body>
+					<http:query-params><![CDATA[#[output application/java
+---
+{
+	"EmpID" : payload.EmpID
+}]]]></http:query-params>
+		</http:request>
+			</when>
+			<when expression="#[payload.op=='UPDATE']">
+				<http:request method="GET" doc:name="SystemApi" doc:id="b1893ebe-f63f-4b9f-bdb9-a703148fc0e3" config-ref="HTTP_Request_configuration" url="${systemapi.update_url}">
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	"EmpID" : payload.EmpID
+}]]]></http:query-params>
+		</http:request>
+			</when>
+			<when expression="#[payload.op=='DELETE']">
+				<http:request method="GET" doc:name="SystemApi" doc:id="c80a2c14-ce8e-4ccf-8aec-283209573a86" config-ref="HTTP_Request_configuration" url="${systemapi.delete_url}">
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	"EmpID" : payload.EmpID
+}]]]></http:query-params>
+		</http:request>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="a65c3942-02f7-40b3-9d5b-41c26e8fd538" message="Invalid Op"/>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="ad341f77-c5a7-44d5-b32b-f936cfdd34e0" message="Process API Completed."/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="e31aea13-6aa1-4d67-88da-53f338fbf9bf" >
+				<set-payload value="#['ErrorMessage' : error.description]" doc:name="Set Payload" doc:id="0c613380-e53d-4f3a-95a9-fe44c163d40a" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>
