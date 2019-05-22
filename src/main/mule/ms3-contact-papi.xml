@@ -35,7 +35,7 @@ output application/json
 		</ee:transform>
 			</when>
 			<when expression="#[payload.op=='CREATE']">
-				<http:request method="GET" doc:name="SystemApi" doc:id="c13d7127-2a85-4c94-821c-879573177529" config-ref="HTTP_Request_configuration" url="${systemapi.create_url}">
+				<http:request method="POST" doc:name="SystemApi" doc:id="c13d7127-2a85-4c94-821c-879573177529" config-ref="HTTP_Request_configuration" url="${systemapi.create_url}">
 			<http:body ><![CDATA[#[payload.request]]]></http:body>
 					<http:query-params><![CDATA[#[output application/java
 ---
@@ -45,8 +45,14 @@ output application/json
 		</http:request>
 			</when>
 			<when expression="#[payload.op=='UPDATE']">
-				<http:request method="GET" doc:name="SystemApi" doc:id="b1893ebe-f63f-4b9f-bdb9-a703148fc0e3" config-ref="HTTP_Request_configuration" url="${systemapi.update_url}">
-			<http:query-params><![CDATA[#[output application/java
+				<http:request method="PUT" doc:name="SystemApi" doc:id="b1893ebe-f63f-4b9f-bdb9-a703148fc0e3" config-ref="HTTP_Request_configuration" url="${systemapi.update_url}">
+			<http:body ><![CDATA[#[payload.request]]]></http:body>
+					<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"EmpID" : "payload.EmpID"
+}]]]></http:uri-params>
+					<http:query-params><![CDATA[#[output application/java
 ---
 {
 	"EmpID" : payload.EmpID
@@ -54,8 +60,14 @@ output application/json
 		</http:request>
 			</when>
 			<when expression="#[payload.op=='DELETE']">
-				<http:request method="GET" doc:name="SystemApi" doc:id="c80a2c14-ce8e-4ccf-8aec-283209573a86" config-ref="HTTP_Request_configuration" url="${systemapi.delete_url}">
-			<http:query-params><![CDATA[#[output application/java
+				<http:request method="DELETE" doc:name="SystemApi" doc:id="c80a2c14-ce8e-4ccf-8aec-283209573a86" config-ref="HTTP_Request_configuration" url="${systemapi.delete_url}">
+			<http:body ><![CDATA[#[payload.request]]]></http:body>
+					<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"EmpId" : "payload.EmpID"
+}]]]></http:uri-params>
+					<http:query-params><![CDATA[#[output application/java
 ---
 {
 	"EmpID" : payload.EmpID
